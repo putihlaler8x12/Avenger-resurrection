@@ -66,3 +66,37 @@ public final class AvengerResurrection {
         public MissionRecord(long startBlock, int phase, boolean terminated, long rewardClaimed) {
             this.startBlock = startBlock;
             this.phase = phase;
+            this.terminated = terminated;
+            this.rewardClaimed = rewardClaimed;
+        }
+
+        public long getStartBlock() { return startBlock; }
+        public int getPhase() { return phase; }
+        public void setPhase(int phase) { this.phase = phase; }
+        public boolean isTerminated() { return terminated; }
+        public void setTerminated(boolean terminated) { this.terminated = terminated; }
+        public long getRewardClaimed() { return rewardClaimed; }
+        public void setRewardClaimed(long rewardClaimed) { this.rewardClaimed = rewardClaimed; }
+    }
+
+    public static final class SquadMember {
+        private final String agent;
+        private final long enlistedAtBlock;
+        private volatile boolean active;
+
+        public SquadMember(String agent, long enlistedAtBlock, boolean active) {
+            this.agent = Objects.requireNonNull(agent);
+            this.enlistedAtBlock = enlistedAtBlock;
+            this.active = active;
+        }
+
+        public String getAgent() { return agent; }
+        public long getEnlistedAtBlock() { return enlistedAtBlock; }
+        public boolean isActive() { return active; }
+        public void setActive(boolean active) { this.active = active; }
+    }
+
+    public enum PhaseGate {
+        PHASE_1(1), PHASE_2(2), PHASE_3(3), PHASE_4(4), PHASE_5(5);
+        private final int index;
+        PhaseGate(int index) { this.index = index; }
