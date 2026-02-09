@@ -32,3 +32,37 @@ public final class AvengerResurrection {
     private final String missionControl;
     private final String vaultHub;
 
+    private final AtomicLong missionCounter = new AtomicLong(0L);
+    private final Map<Long, MissionRecord> missions = new ConcurrentHashMap<>();
+    private final Map<String, Integer> agentToSquadSlot = new ConcurrentHashMap<>();
+    private final Map<Integer, SquadMember> squadSlotToMember = new ConcurrentHashMap<>();
+    private final Map<Long, Long> missionCooldownUntil = new ConcurrentHashMap<>();
+    private volatile long totalRewardsDisbursed;
+    private volatile boolean paused;
+
+    public AvengerResurrection() {
+        this.commanderTower = "0x8F2a4C6e1B0d3A5f7E9c2b4D6a8F0e1C3B5d7E9";
+        this.missionControl = "0x1E7b9D3f5A0c2E4d6F8a0B2c4D6e8F0a2B4c6D8";
+        this.vaultHub = "0x5C9e2A4b6D8f0c1E3a5B7d9F1c3E5a7B9d1F3e5";
+        this.paused = false;
+    }
+
+    public AvengerResurrection(String commanderTower, String missionControl, String vaultHub) {
+        if (commanderTower == null || missionControl == null || vaultHub == null) {
+            throw new IllegalArgumentException("ZeroAddressDisallowed");
+        }
+        this.commanderTower = commanderTower;
+        this.missionControl = missionControl;
+        this.vaultHub = vaultHub;
+        this.paused = false;
+    }
+
+    public static final class MissionRecord {
+        private final long startBlock;
+        private volatile int phase;
+        private volatile boolean terminated;
+        private volatile long rewardClaimed;
+
+        public MissionRecord(long startBlock, int phase, boolean terminated, long rewardClaimed) {
+            this.startBlock = startBlock;
+            this.phase = phase;
