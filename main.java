@@ -304,3 +304,37 @@ public final class AvengerResurrection {
         return address != null && address.equalsIgnoreCase(commanderTower);
     }
 
+    public void validateCommander(String address) {
+        if (!isCommander(address)) throw new SecurityException("ResurrectionOnlyCommander");
+    }
+
+    public Set<PhaseGate> unlockedPhasesForMission(long missionId, long currentBlock) {
+        MissionRecord m = missions.get(missionId);
+        if (m == null) return EnumSet.noneOf(PhaseGate.class);
+        Set<PhaseGate> set = EnumSet.noneOf(PhaseGate.class);
+        long elapsed = currentBlock - m.getStartBlock();
+        int phasesUnlocked = (int) Math.min(MAX_PHASE_INDEX, elapsed / PHASE_DURATION_BLOCKS);
+        if (phasesUnlocked >= 1) set.add(PhaseGate.PHASE_1);
+        if (phasesUnlocked >= 2) set.add(PhaseGate.PHASE_2);
+        if (phasesUnlocked >= 3) set.add(PhaseGate.PHASE_3);
+        if (phasesUnlocked >= 4) set.add(PhaseGate.PHASE_4);
+        if (phasesUnlocked >= 5) set.add(PhaseGate.PHASE_5);
+        return set;
+    }
+
+    public BigInteger totalRewardPoolIfAllClaimed(int missionCountEstimate) {
+        return BigInteger.valueOf(REWARD_BASE_UNITS * MISSION_CAP_PER_PHASE * Math.max(0, missionCountEstimate));
+    }
+
+    public String formatMissionSummary(long missionId) {
+        MissionRecord m = missions.get(missionId);
+        if (m == null) return "Mission " + missionId + ": not found";
+        return String.format("Mission %d: phase=%d terminated=%s rewardClaimed=%d startBlock=%d",
+                missionId, m.getPhase(), m.isTerminated(), m.getRewardClaimed(), m.getStartBlock());
+    }
+
+    public List<String> listEnlistedAgents() {
+        List<String> out = new ArrayList<>();
+        for (int i = 1; i <= MAX_SQUAD_SIZE; i++) {
+            SquadMember sm = squadSlotToMember.get(i);
+            if (sm != null && sm.isActive() && sm.getAgent() != null) {
