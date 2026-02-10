@@ -270,3 +270,37 @@ public final class AvengerResurrection {
         public RewardSplit(long vaultAmount, long controlAmount) {
             this.vaultAmount = vaultAmount;
             this.controlAmount = controlAmount;
+        }
+
+        public long getVaultAmount() { return vaultAmount; }
+        public long getControlAmount() { return controlAmount; }
+    }
+
+    public List<Integer> listFilledSlots() {
+        List<Integer> out = new ArrayList<>();
+        for (int i = 1; i <= MAX_SQUAD_SIZE; i++) {
+            if (squadSlotToMember.containsKey(i) && squadSlotToMember.get(i).isActive()) {
+                out.add(i);
+            }
+        }
+        return Collections.unmodifiableList(out);
+    }
+
+    public Map<Long, MissionRecord> snapshotMissions() {
+        return new HashMap<>(missions);
+    }
+
+    public long phaseDurationBlocks() { return PHASE_DURATION_BLOCKS; }
+    public int maxSquadSize() { return MAX_SQUAD_SIZE; }
+    public long rewardBaseUnits() { return REWARD_BASE_UNITS; }
+    public int missionCapPerPhase() { return MISSION_CAP_PER_PHASE; }
+    public long cooldownBlocks() { return COOLDOWN_BLOCKS; }
+    public int vaultShareBps() { return VAULT_SHARE_BPS; }
+    public int controlShareBps() { return CONTROL_SHARE_BPS; }
+    public int tickBase() { return TICK_BASE; }
+    public int maxPhaseIndex() { return MAX_PHASE_INDEX; }
+
+    public boolean isCommander(String address) {
+        return address != null && address.equalsIgnoreCase(commanderTower);
+    }
+
