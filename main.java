@@ -168,3 +168,37 @@ public final class AvengerResurrection {
     public long getMissionCount() { return missionCounter.get(); }
     public long getTotalRewardsDisbursed() { return totalRewardsDisbursed; }
     public boolean isPaused() { return paused; }
+
+    public MissionRecord getMission(long missionId) {
+        return missions.get(missionId);
+    }
+
+    public SquadMember getSquadMember(int slot) {
+        return squadSlotToMember.get(slot);
+    }
+
+    public Integer getAgentSlot(String agent) {
+        return agentToSquadSlot.get(agent);
+    }
+
+    public Long getCooldownUntil(long missionId) {
+        return missionCooldownUntil.get(missionId);
+    }
+
+    public boolean canAdvancePhase(long missionId, long currentBlock) {
+        MissionRecord m = missions.get(missionId);
+        if (m == null || m.isTerminated() || m.getStartBlock() == 0 || m.getPhase() >= MAX_PHASE_INDEX) {
+            return false;
+        }
+        return currentBlock >= m.getStartBlock() + PHASE_DURATION_BLOCKS;
+    }
+
+    public long computeRewardForMission(long missionId) {
+        MissionRecord m = missions.get(missionId);
+        if (m == null || m.isTerminated() || m.getRewardClaimed() > 0) return 0L;
+        return REWARD_BASE_UNITS * MISSION_CAP_PER_PHASE;
+    }
+
+    public long blocksUntilPhaseUnlock(long missionId, long currentBlock) {
+        MissionRecord m = missions.get(missionId);
+        if (m == null || m.getStartBlock() == 0) return Long.MAX_VALUE;
