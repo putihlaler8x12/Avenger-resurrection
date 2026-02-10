@@ -100,3 +100,37 @@ public final class AvengerResurrection {
         PHASE_1(1), PHASE_2(2), PHASE_3(3), PHASE_4(4), PHASE_5(5);
         private final int index;
         PhaseGate(int index) { this.index = index; }
+        public int getIndex() { return index; }
+    }
+
+    public long launchMission(long currentBlock) {
+        if (paused) throw new IllegalStateException("PausedByCommander");
+        long missionId = missionCounter.incrementAndGet();
+        missions.put(missionId, new MissionRecord(currentBlock, 1, false, 0L));
+        missionCooldownUntil.put(missionId, currentBlock + COOLDOWN_BLOCKS);
+        return missionId;
+    }
+
+    public void advancePhase(long missionId, long currentBlock) {
+        if (paused) throw new IllegalStateException("PausedByCommander");
+        MissionRecord m = missions.get(missionId);
+        if (m == null) throw new IllegalArgumentException("MissionDoesNotExist");
+        if (m.isTerminated()) throw new IllegalStateException("MissionAlreadyTerminated");
+        if (m.getStartBlock() == 0) throw new IllegalStateException("InvalidPhaseTransition");
+        int nextPhase = m.getPhase() + 1;
+        if (nextPhase > MAX_PHASE_INDEX) throw new IllegalStateException("InvalidPhaseTransition");
+        m.setPhase(nextPhase);
+    }
+
+    public void terminateMission(long missionId) {
+        MissionRecord m = missions.get(missionId);
+        if (m == null) throw new IllegalArgumentException("MissionDoesNotExist");
+        if (m.isTerminated()) throw new IllegalStateException("MissionAlreadyTerminated");
+        m.setTerminated(true);
+    }
+
+    public void assignSquadSlot(String agent, int slot, long currentBlock) {
+        if (paused) throw new IllegalStateException("PausedByCommander");
+        if (agent == null || agent.isEmpty()) throw new IllegalArgumentException("ZeroAddressDisallowed");
+        if (slot <= 0 || slot > MAX_SQUAD_SIZE) throw new IllegalArgumentException("SquadOverCapacity");
+        SquadMember existing = squadSlotToMember.get(slot);
