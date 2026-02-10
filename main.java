@@ -236,3 +236,37 @@ public final class AvengerResurrection {
 
     public int activeSquadCount() {
         int count = 0;
+        for (int i = 1; i <= MAX_SQUAD_SIZE; i++) {
+            SquadMember sm = squadSlotToMember.get(i);
+            if (sm != null && sm.getAgent() != null && !sm.getAgent().isEmpty() && sm.isActive()) count++;
+        }
+        return count;
+    }
+
+    public long cooldownBlocksRemaining(long missionId, long currentBlock) {
+        Long until = missionCooldownUntil.get(missionId);
+        if (until == null || currentBlock >= until) return 0L;
+        return until - currentBlock;
+    }
+
+    public boolean missionExists(long missionId) {
+        MissionRecord m = missions.get(missionId);
+        return m != null && m.getStartBlock() != 0;
+    }
+
+    public RewardSplit rewardSplitForMission(long missionId) {
+        MissionRecord m = missions.get(missionId);
+        if (m == null || m.getRewardClaimed() > 0) return new RewardSplit(0L, 0L);
+        long total = REWARD_BASE_UNITS * MISSION_CAP_PER_PHASE;
+        long vaultAmount = (total * VAULT_SHARE_BPS) / 100;
+        long controlAmount = (total * CONTROL_SHARE_BPS) / 100;
+        return new RewardSplit(vaultAmount, controlAmount);
+    }
+
+    public static final class RewardSplit {
+        private final long vaultAmount;
+        private final long controlAmount;
+
+        public RewardSplit(long vaultAmount, long controlAmount) {
+            this.vaultAmount = vaultAmount;
+            this.controlAmount = controlAmount;
