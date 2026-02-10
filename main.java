@@ -134,3 +134,37 @@ public final class AvengerResurrection {
         if (agent == null || agent.isEmpty()) throw new IllegalArgumentException("ZeroAddressDisallowed");
         if (slot <= 0 || slot > MAX_SQUAD_SIZE) throw new IllegalArgumentException("SquadOverCapacity");
         SquadMember existing = squadSlotToMember.get(slot);
+        if (existing != null && existing.isActive()) throw new IllegalStateException("SlotAlreadyFilled");
+        agentToSquadSlot.put(agent, slot);
+        squadSlotToMember.put(slot, new SquadMember(agent, currentBlock, true));
+    }
+
+    public void revokeSquadSlot(int slot) {
+        SquadMember sm = squadSlotToMember.get(slot);
+        if (sm == null) throw new IllegalStateException("AgentNotEnlisted");
+        agentToSquadSlot.remove(sm.getAgent());
+        squadSlotToMember.remove(slot);
+    }
+
+    public void claimMissionReward(long missionId, String recipient, long currentBlock) {
+        if (paused) throw new IllegalStateException("PausedByCommander");
+        MissionRecord m = missions.get(missionId);
+        if (m == null) throw new IllegalArgumentException("MissionDoesNotExist");
+        if (m.isTerminated()) throw new IllegalStateException("MissionAlreadyTerminated");
+        if (m.getRewardClaimed() > 0) throw new IllegalStateException("RewardPoolExhausted");
+        if (currentBlock < m.getStartBlock() + PHASE_DURATION_BLOCKS) throw new IllegalStateException("PhaseLocked");
+        long amount = REWARD_BASE_UNITS * MISSION_CAP_PER_PHASE;
+        m.setRewardClaimed(amount);
+        totalRewardsDisbursed += amount;
+    }
+
+    public void setPaused(boolean paused) {
+        this.paused = paused;
+    }
+
+    public String getCommanderTower() { return commanderTower; }
+    public String getMissionControl() { return missionControl; }
+    public String getVaultHub() { return vaultHub; }
+    public long getMissionCount() { return missionCounter.get(); }
+    public long getTotalRewardsDisbursed() { return totalRewardsDisbursed; }
+    public boolean isPaused() { return paused; }
