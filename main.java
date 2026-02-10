@@ -202,3 +202,37 @@ public final class AvengerResurrection {
     public long blocksUntilPhaseUnlock(long missionId, long currentBlock) {
         MissionRecord m = missions.get(missionId);
         if (m == null || m.getStartBlock() == 0) return Long.MAX_VALUE;
+        long unlockAt = m.getStartBlock() + PHASE_DURATION_BLOCKS;
+        if (currentBlock >= unlockAt) return 0L;
+        return unlockAt - currentBlock;
+    }
+
+    public boolean isMissionTerminated(long missionId) {
+        MissionRecord m = missions.get(missionId);
+        return m != null && m.isTerminated();
+    }
+
+    public int currentPhase(long missionId) {
+        MissionRecord m = missions.get(missionId);
+        return m == null ? 0 : m.getPhase();
+    }
+
+    public long missionStartBlock(long missionId) {
+        MissionRecord m = missions.get(missionId);
+        return m == null ? 0L : m.getStartBlock();
+    }
+
+    public long rewardClaimedForMission(long missionId) {
+        MissionRecord m = missions.get(missionId);
+        return m == null ? 0L : m.getRewardClaimed();
+    }
+
+    public boolean isAgentEnlisted(String agent) {
+        Integer slot = agentToSquadSlot.get(agent);
+        if (slot == null) return false;
+        SquadMember sm = squadSlotToMember.get(slot);
+        return sm != null && sm.isActive();
+    }
+
+    public int activeSquadCount() {
+        int count = 0;
